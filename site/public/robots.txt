@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://danieldgt.github.io/entend-landing-page/sitemap-index.xml

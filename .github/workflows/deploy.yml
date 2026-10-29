@@ -1,0 +1,59 @@
+# Publica a landing no GitHub Pages.
+#
+# Roda a cada push na main e TODO DIA às 9h (Brasília): a vitrine é lida da API pública do
+# catálogo Drezz no build, então um livro novo cadastrado lá aparece aqui sem ninguém mexer.
+#
+# Medição (opcional): defina em Settings → Secrets and variables → Actions → Variables
+#   PUBLIC_GA4_ID e PUBLIC_META_PIXEL_ID. Sem elas, nenhum script de terceiros é carregado.
+# Domínio próprio: defina SITE_URL (ex.: https://autores.entend.com.br) e SITE_BASE como "/".
+name: Publicar landing
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://danieldgt.github.io' }}
+          SITE_BASE: ${{ vars.SITE_BASE || '/entend-landing-page' }}
+          PUBLIC_GA4_ID: ${{ vars.PUBLIC_GA4_ID }}
+          PUBLIC_META_PIXEL_ID: ${{ vars.PUBLIC_META_PIXEL_ID }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

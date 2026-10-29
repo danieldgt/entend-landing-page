@@ -1,0 +1,434 @@
+---
+/**
+ * A landing. Ordem (Etapa 2): dobra → prova → dor → trajetória → benefícios → oferta → leitores →
+ * perguntas → fecho. Cada bloco existe para uma objeção da matriz da Etapa 1.
+ */
+import Base from '@/layouts/Base.astro'
+import {
+  BENEFICIOS,
+  CATALOGO,
+  CONTATO,
+  CTA,
+  CTA_APOIO,
+  FAQ,
+  PASSOS,
+  PROMESSAS,
+  SEO,
+  TRAJETORIA,
+  urlCatalogo,
+  urlWhatsapp,
+} from '@/conteudo/site'
+import { livros } from '@/lib/catalogo'
+
+const base = import.meta.env.BASE_URL
+const img = (p: string) => `${base}${p}`
+const vitrine = await livros()
+const destaque = vitrine.find((l) => l.autor === 'Eliana de Goes') ?? vitrine[0]
+const wa = urlWhatsapp()
+
+const doisDigitos = (n: number) => String(n).padStart(2, '0')
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${CONTATO.site}#editora`,
+      name: CONTATO.editora,
+      alternateName: 'Entend',
+      url: CONTATO.site,
+      email: CONTATO.email,
+      telephone: '+55 85 99124-9368',
+      sameAs: [CONTATO.instagram],
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: CONTATO.rua,
+        addressLocality: CONTATO.cidade,
+        addressRegion: CONTATO.uf,
+        postalCode: CONTATO.cep,
+        addressCountry: 'BR',
+      },
+      description:
+        'Editora para autores: acompanha de perto toda a trajetória de criação e lançamento de um livro, com vitrine e venda online.',
+    },
+    ...vitrine.map((l) => ({
+      '@type': 'Book',
+      name: l.titulo,
+      ...(l.autor ? { author: { '@type': 'Person', name: l.autor } } : {}),
+      publisher: { '@id': `${CONTATO.site}#editora` },
+      offers: {
+        '@type': 'Offer',
+        price: l.preco.replace(/[^\d,]/g, '').replace(',', '.'),
+        priceCurrency: 'BRL',
+        availability: 'https://schema.org/InStock',
+        url: CATALOGO,
+      },
+    })),
+    {
+      '@type': 'FAQPage',
+      mainEntity: FAQ.map(([q, a]) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      })),
+    },
+  ],
+}
+---
+
+<Base titulo={SEO.titulo} descricao={SEO.descricao}>
+  <link
+    slot="cabeca"
+    rel="preload"
+    as="image"
+    type="image/webp"
+    href={img('img/livro-palco-800.webp')}
+    imagesrcset={`${img('img/livro-palco-800.webp')} 987w, ${img('img/livro-palco.webp')} 1974w`}
+    imagesizes="(max-width: 760px) 70vw, 520px"
+    fetchpriority="high"
+  />
+  <script slot="cabeca" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <nav class="nav" aria-label="Principal">
+    <a class="nav__marca" href={base}>ENTEND:</a>
+    <div class="nav__links">
+      <a href="#trajetoria">A trajetória</a>
+      <a href="#vitrine">Livros</a>
+      <a href="#perguntas">Perguntas</a>
+    </div>
+    <a class="nav__cta" href={wa} data-wa data-local="nav">{CTA}</a>
+  </nav>
+
+  <main id="conteudo">
+    <!-- 1. DOBRA — a sala escura: o livro real sob o foco, como obra de galeria. -->
+    <section class="dobra" aria-labelledby="titulo-dobra">
+      <picture class="dobra__sala" aria-hidden="true">
+        <source media="(max-width: 760px)" srcset={img('img/sala-retrato.webp')} />
+        <img src={img('img/sala.webp')} alt="" width="2560" height="1440" fetchpriority="high" />
+      </picture>
+
+      <p class="dobra__selo rotulo">Para autores:</p>
+      <h1 id="titulo-dobra">
+        <span class="v-a">Seu conhecimento merece virar livro.</span>
+        <span class="v-b">Do manuscrito ao lançamento, sem fazer sozinho.</span>
+      </h1>
+
+      <figure class="dobra__obra">
+        <img
+          src={img('img/livro-palco-800.webp')}
+          srcset={`${img('img/livro-palco-800.webp')} 987w, ${img('img/livro-palco.webp')} 1974w`}
+          sizes="(max-width: 760px) 70vw, 520px"
+          width="987"
+          height="840"
+          alt="Livro CME e a Jornada da Segurança do Paciente no Hospital, de Eliana de Goes, em pé sob um foco de luz."
+          data-parallax
+        />
+        <figcaption class="dobra__legenda">
+          EM DESTAQUE: Eliana de Goes, <em>CME e a Jornada da Segurança do Paciente no Hospital</em>
+        </figcaption>
+      </figure>
+
+      <div class="dobra__texto">
+        <p>
+          A Entend acompanha você de perto, da primeira ideia ao lançamento — e seu livro chega à
+          vitrine pronto para ser vendido.
+        </p>
+        <div class="dobra__acoes">
+          <a class="botao botao--claro" href={wa} data-wa data-local="dobra">{CTA}</a>
+          <a class="seta" href={urlCatalogo('dobra')} data-catalogo data-local="dobra">Ver livros lançados</a>
+        </div>
+        <p class="apoio">{CTA_APOIO}</p>
+        <span class="dobra__fio" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <!-- 2. PROVA — o que a pessoa confere sozinha. -->
+    <div class="faixa" id="vitrine">
+      <div class="caixa faixa__dentro">
+        <p class="faixa__rotulo">Já na vitrine:</p>
+        <p class="faixa__frase">Livros de autores Entend, à venda agora.</p>
+        <a class="seta" href={urlCatalogo('faixa_vitrine')} data-catalogo data-local="faixa_vitrine">Ver catálogo</a>
+      </div>
+    </div>
+
+    <section class="secao caixa" aria-labelledby="titulo-vitrine">
+      <h2 id="titulo-vitrine" class="so-leitor">Livros já publicados</h2>
+      <div class:list={['vitrine', vitrine.length > 1 && 'vitrine--varios']}>
+        <div class="vitrine__grade">
+          {
+            vitrine.map((l) => (
+              <a class="card r" href={urlCatalogo('card')} data-catalogo data-local="card">
+                <div class="card__capa">
+                  <img
+                    src={l.capaLocal ? img(l.capa) : l.capa}
+                    alt={`Capa do livro ${l.titulo}${l.autor ? `, de ${l.autor}` : ''}`}
+                    width="1200"
+                    height="1600"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="card__meta">
+                  {l.autor && <p class="rotulo">{l.autor}</p>}
+                  <h3 class="card__titulo">{l.titulo}</h3>
+                  <p class="card__editora">Editora Entend Educacional</p>
+                  <p class="card__preco rotulo num">{l.preco}</p>
+                  <span class="seta">Ver no catálogo</span>
+                </div>
+              </a>
+            ))
+          }
+        </div>
+
+        <div>
+        <ol class="fatos r">
+          <li>
+            <span class="fatos__n num">1</span>
+            <div>
+              <h3>Um livro publicado e à venda.</h3>
+              <p>
+                {destaque ? `${destaque.titulo}, de ${destaque.autor ?? 'autor Entend'}` : 'O primeiro livro'}, está no
+                catálogo, com pagamento online — confira.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="fatos__n num">2</span>
+            <div>
+              <h3>Uma sede de verdade.</h3>
+              <p>{CONTATO.endereco}.</p>
+            </div>
+          </li>
+          <li>
+            <span class="fatos__n num">3</span>
+            <div>
+              <h3>Uma editora que nasceu de uma escola.</h3>
+              <p>A Entend forma profissionais com cursos, mentorias e eventos.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="ponte r">
+          O próximo livro da vitrine pode ser o seu.
+          <a class="seta" href={wa} data-wa data-local="vitrine">{CTA}</a>
+        </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. O PROBLEMA — PAS. -->
+    <section class="secao caixa" aria-labelledby="titulo-problema">
+      <div class="problema">
+        <div class="r">
+          <p class="secao__selo rotulo">O problema:</p>
+          <h2 id="titulo-problema" class="titulo">Você sabe muito. O&nbsp;livro é que não sai.</h2>
+          <p class="corpo">
+            Você tem anos de prática, aulas dadas, casos resolvidos. Todo mundo diz que isso dava um
+            livro. E dá.
+          </p>
+          <p class="corpo">Mas entre saber e publicar existe um caminho que ninguém ensina:</p>
+          <ul class="lista-traco">
+            <li>por onde começar, e como organizar o que você sabe em capítulos;</li>
+            <li>quem revisa, quem faz a capa, quem diagrama — e em que ordem;</li>
+            <li>o que é ISBN, ficha catalográfica, tiragem;</li>
+            <li>e, no fim, onde o livro vai ser vendido.</li>
+          </ul>
+          <p class="corpo">
+            Sozinho, cada etapa vira uma decisão nova e um fornecedor novo. O texto volta para a
+            gaveta. Ou o livro sai — e fica em caixas, sem ninguém para vendê-lo.
+          </p>
+          <p class="virada">Não precisa ser assim. Você não precisa fazer esse caminho sozinho.</p>
+        </div>
+        <figure class="figura r">
+          <img
+            src={img('img/manuscrito.webp')}
+            alt=""
+            width="1600"
+            height="1100"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>Todo livro começa assim: folhas soltas esperando um caminho.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 4. A TRAJETÓRIA. -->
+    <div class="faixa" id="trajetoria">
+      <div class="caixa faixa__dentro">
+        <p class="faixa__rotulo">A trajetória:</p>
+        <p class="faixa__frase">Da primeira ideia ao lançamento, com a Entend do seu lado.</p>
+        <a class="seta" href={wa} data-wa data-local="faixa_trajetoria">Começar pelo WhatsApp</a>
+      </div>
+    </div>
+
+    <section class="secao caixa" aria-labelledby="titulo-trajetoria" data-secao="trajetoria">
+      <div class="trajetoria__intro r">
+        <h2 id="titulo-trajetoria" class="titulo">Uma editora que caminha com você.</h2>
+        <p class="corpo">
+          A conversa começa no WhatsApp. Depois, a Entend acompanha de perto cada etapa da criação e
+          do lançamento do seu livro.
+        </p>
+      </div>
+      <ol class="etapas" data-etapas>
+        {
+          TRAJETORIA.map(([nome, frase], i) => (
+            <li class="etapa">
+              <span class="etapa__n num" aria-hidden="true">
+                {doisDigitos(i + 1)}
+              </span>
+              <h3>
+                <span class="so-leitor">Etapa {i + 1}: </span>
+                {nome}
+              </h3>
+              <p>{frase}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <!-- 5. BENEFÍCIOS. -->
+    <section class="secao caixa" aria-labelledby="titulo-beneficios">
+      <div class="beneficios">
+        <div class="r">
+          <p class="secao__selo rotulo">Por que a Entend:</p>
+          <h2 id="titulo-beneficios" class="titulo">O que muda quando você não faz sozinho.</h2>
+        </div>
+        <ul class="r">
+          {
+            BENEFICIOS.map(([titulo, frase]) => (
+              <li>
+                <h3>{titulo}</h3>
+                <p>{frase}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. OFERTA E COMPROMISSO. -->
+    <section class="secao caixa" aria-labelledby="titulo-comecar" id="comecar">
+      <p class="secao__selo rotulo">Como começar:</p>
+      <h2 id="titulo-comecar" class="titulo">Três passos até a sua conversa editorial.</h2>
+      <ol class="passos r">
+        {
+          PASSOS.map(([titulo, frase], i) => (
+            <li>
+              <span class="passos__n num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <h3>{titulo}</h3>
+              <p>{frase}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="comecar__acao">
+        <a class="botao" href={wa} data-wa data-local="como_comecar">{CTA}</a>
+        <p class="apoio">{CTA_APOIO}</p>
+      </div>
+
+      <div class="promessas r">
+        <div>
+          <h3 class="rotulo">Prometemos:</h3>
+          <ul>{PROMESSAS.sim.map((p) => <li>{p}</li>)}</ul>
+        </div>
+        <div class="promessas__nao">
+          <h3 class="rotulo">Não prometemos:</h3>
+          <ul>{PROMESSAS.nao.map((p) => <li>{p}</li>)}</ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. PARA LEITORES. -->
+    <div class="faixa">
+      <div class="caixa faixa__dentro">
+        <p class="faixa__rotulo">Catálogo:</p>
+        <p class="faixa__frase">
+          Quer só ler? Os livros da Entend estão à venda, com pagamento online e retirada em Fortaleza.
+        </p>
+        <a class="seta" href={urlCatalogo('faixa_catalogo')} data-catalogo data-local="faixa_catalogo">Ver catálogo</a>
+      </div>
+    </div>
+
+    <!-- 8. PERGUNTAS — em <details>: a resposta está no HTML mesmo fechada (Google e Ctrl+F). -->
+    <section class="secao caixa" aria-labelledby="titulo-perguntas" id="perguntas">
+      <div class="faq">
+        <div>
+          <p class="secao__selo rotulo">Perguntas:</p>
+          <h2 id="titulo-perguntas" class="titulo">O que autores perguntam antes de começar.</h2>
+        </div>
+        <div class="faq__lista">
+          {
+            FAQ.map(([pergunta, resposta], i) => (
+              <details data-faq={i + 1}>
+                <summary>{pergunta}</summary>
+                <p>{resposta}</p>
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. FECHO — responde à dúvida que sobrou, não repete o pedido. -->
+    <section class="fecho" aria-labelledby="titulo-fecho" data-fecho>
+      <p class="rotulo">Ainda em dúvida?</p>
+      <h2 id="titulo-fecho">Não sabe se a sua ideia vira livro?</h2>
+      <p>
+        Essa é a primeira pergunta que respondemos juntos. Mande uma mensagem e conte o que você tem —
+        uma ideia já basta.
+      </p>
+      <a class="botao botao--claro" href={wa} data-wa data-local="fecho">{CTA}</a>
+      <p class="apoio">{CTA_APOIO}</p>
+    </section>
+  </main>
+
+  <footer class="rodape caixa">
+    <div class="rodape__grade">
+      <div>
+        <h2 class="rotulo">Entend:</h2>
+        <address>
+          {CONTATO.editora}<br />
+          {CONTATO.endereco}<br />
+          WhatsApp <a href={wa} data-wa data-local="rodape">{CONTATO.telefone}</a><br />
+          <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>
+        </address>
+      </div>
+      <div>
+        <h2 class="rotulo">Autores</h2>
+        <ul>
+          <li><a href="#trajetoria">A trajetória</a></li>
+          <li><a href="#perguntas">Perguntas</a></li>
+          <li><a href={wa} data-wa data-local="rodape_cta">{CTA}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="rotulo">Livros</h2>
+        <ul>
+          <li><a href={urlCatalogo('rodape')} data-catalogo data-local="rodape">Catálogo</a></li>
+          <li><a href="#perguntas">Como comprar</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="rotulo">Entend</h2>
+        <ul>
+          <li><a href={CONTATO.site} rel="noopener">Site da escola</a></li>
+          <li><a href={CONTATO.instagram} rel="noopener">Instagram @entend_br</a></li>
+          <li><a href={`mailto:${CONTATO.email}`}>Contato</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="rodape__fim">
+      <span>© 2026 Entend Educacional</span>
+      <span>Livros vendidos pelo catálogo online da Entend.</span>
+    </div>
+  </footer>
+
+  <a class="barra-fixa" href={wa} data-wa data-local="barra_fixa" aria-hidden="true" tabindex="-1">
+    {CTA} →
+  </a>
+
+  <script src="../scripts/pagina.ts"></script>
+</Base>

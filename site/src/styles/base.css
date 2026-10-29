@@ -1,0 +1,1134 @@
+/*
+ * A casa da landing: "white cube" — referência platformart.com (Refero), adaptada em
+ * docs/etapa-3-visual-ux.md.
+ *
+ * Três regras que seguram o resto, e que um ajuste "a olho" costuma quebrar:
+ *   1. a cor vem só das capas e das fotos — nenhum token cromático, nenhum gradiente de UI;
+ *   2. raio 0 e nenhuma sombra: profundidade é borda de 1px ou troca de superfície;
+ *   3. escala fechada 12/15/20/48/72 (no celular 44 e 30 substituem 72 e 48).
+ */
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fontes/inter-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fontes/inter-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+:root {
+  --branco: #ffffff;
+  --preto: #000000;
+  --cinza-faixa: #dddddd;
+  --cinza-borda: #cccccc;
+  /* #808080 é o cinza mais claro que ainda passa AA (3,9:1 só vale para texto grande) — por isso
+     legenda pequena usa --cinza-texto. #b3b3b3 e #aaaaaa só em elementos que não são texto. */
+  --cinza-legenda: #808080;
+  --cinza-texto: #595959;
+  --cinza-fino: #b3b3b3;
+
+  --fonte: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --t-legenda: 12px;
+  --t-corpo: 15px;
+  --t-sub: 20px;
+  --t-titulo: 48px;
+  --t-display: 72px;
+
+  --largura: 1280px;
+  --margem: 20px;
+  --secao: 72px;
+  --nav: 470px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --t-titulo: 30px;
+    --t-display: 44px;
+    --secao: 56px;
+    --margem: 16px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+/* A navegação é fixa: sem esta folga, a âncora pousa com a faixa da seção escondida atrás dela. */
+[id] {
+  scroll-margin-top: 64px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--branco);
+  color: var(--preto);
+  font-family: var(--fonte);
+  font-size: var(--t-corpo);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul,
+figure,
+dl,
+dd {
+  margin: 0;
+}
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.pular {
+  position: absolute;
+  left: 16px;
+  top: -60px;
+  z-index: 50;
+  background: var(--branco);
+  padding: 10px 14px;
+  border: 1px solid var(--preto);
+}
+.pular:focus {
+  top: 16px;
+}
+
+.caixa {
+  max-width: var(--largura);
+  margin-inline: auto;
+  padding-inline: var(--margem);
+}
+
+/* ---------- tipografia ---------- */
+
+.rotulo {
+  font-size: var(--t-legenda);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.titulo {
+  font-size: var(--t-titulo);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  /* Sem isto, "não sai." ficava sozinho na última linha em 1024px. */
+  text-wrap: balance;
+}
+
+.corpo {
+  max-width: 640px;
+  line-height: 1.45;
+}
+.corpo + .corpo {
+  margin-top: 14px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- ações ---------- */
+
+/* Link de texto da referência: seta à frente, sublinhado; no hover o traço engrossa — a cor não muda. */
+.seta {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+}
+.seta::before {
+  content: '→ ';
+  display: inline-block;
+  margin-right: 2px;
+  text-decoration: none;
+}
+.seta:hover {
+  text-decoration-thickness: 2px;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 28px;
+  border: 1px solid var(--preto);
+  background: var(--preto);
+  color: var(--branco);
+  font-size: var(--t-legenda);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 160ms, color 160ms;
+}
+.botao:hover {
+  background: var(--branco);
+  color: var(--preto);
+}
+.botao--claro {
+  background: var(--branco);
+  color: var(--preto);
+  border-color: var(--branco);
+}
+.botao--claro:hover {
+  background: transparent;
+  color: var(--branco);
+}
+.botao svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.apoio {
+  margin-top: 12px;
+  font-size: var(--t-legenda);
+  color: var(--cinza-texto);
+}
+
+/* ---------- navegação flutuante (como a da referência: caixa compacta, centralizada) ---------- */
+
+.nav {
+  position: fixed;
+  z-index: 30;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(var(--nav), calc(100% - 2 * var(--margem)));
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 12px;
+  background: var(--branco);
+  border: 1px solid var(--preto);
+  font-size: var(--t-legenda);
+}
+.nav__marca {
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.nav__links {
+  display: flex;
+  gap: 12px;
+}
+.nav__links a,
+.nav__cta {
+  text-decoration: none;
+}
+.nav__links a:hover,
+.nav__cta:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.nav__cta {
+  margin-left: auto;
+  font-weight: 500;
+}
+@media (max-width: 520px) {
+  .nav__links {
+    display: none;
+  }
+}
+
+/* ---------- dobra: a sala escura ---------- */
+
+.dobra {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #0b0b0b;
+  color: var(--branco);
+  min-height: 100svh;
+  /* Reserva por grid, não por vh: o livro fica com a folga que o texto não pediu e encolhe até
+     um mínimo — a conta fecha em qualquer altura de tela. */
+  display: grid;
+  grid-template-rows: 112px auto minmax(150px, 1fr) auto;
+  justify-items: center;
+  text-align: center;
+  padding: 0 var(--margem) 28px;
+}
+.dobra__sala,
+.dobra__sala img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+.dobra__selo {
+  grid-row: 1;
+  align-self: end;
+  margin-bottom: 18px;
+  color: #d9d9d9;
+}
+.dobra h1 {
+  grid-row: 2;
+  font-size: var(--t-display);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  /* 22ch = "SEU CONHECIMENTO MERECE" numa linha: a headline fecha em duas, como a referência. */
+  max-width: 22ch;
+  text-wrap: balance;
+}
+.dobra__obra {
+  grid-row: 3;
+  position: relative;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 20px;
+}
+.dobra__obra img {
+  height: 100%;
+  /* Teto pela altura da tela: o livro cede espaço para a ação caber na primeira dobra. */
+  max-height: min(400px, 40svh);
+  width: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  object-fit: contain;
+  will-change: transform;
+}
+.dobra__legenda {
+  margin-top: 4px;
+  font-size: var(--t-legenda);
+  color: #bdbdbd;
+  max-width: 46ch;
+}
+.dobra__legenda em {
+  font-style: normal;
+  color: var(--branco);
+}
+.dobra__texto {
+  grid-row: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 22px;
+}
+.dobra__texto p {
+  max-width: 560px;
+  line-height: 1.4;
+  color: #e6e6e6;
+}
+.dobra__acoes {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.dobra .apoio {
+  color: #bdbdbd;
+}
+/* A hairline sob a ação: o lugar da barra de progresso do carrossel da referência. */
+.dobra__fio {
+  margin-top: 22px;
+  width: min(var(--nav), 100%);
+  height: 1px;
+  background: rgb(255 255 255 / 0.55);
+}
+@media (max-width: 760px) {
+  .dobra {
+    grid-template-rows: 92px auto minmax(110px, 1fr) auto;
+    padding-bottom: 20px;
+  }
+  /* "CONHECIMENTO" a 44px não cabe em 375px (vazava para o lado): a headline acompanha a largura. */
+  .dobra h1 {
+    font-size: clamp(30px, 9.2vw, 44px);
+  }
+  .dobra__obra {
+    padding-top: 14px;
+  }
+  .dobra__obra img {
+    max-height: 34svh;
+  }
+  /* Em tela baixa a legenda sai: o que precisa caber é a ação. */
+  .dobra__legenda {
+    display: none;
+  }
+  .dobra__selo {
+    margin-bottom: 12px;
+  }
+  .dobra__acoes {
+    width: 100%;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .dobra__acoes .botao {
+    width: 100%;
+  }
+  .dobra__texto {
+    padding-top: 14px;
+  }
+  .dobra__acoes {
+    margin-top: 16px;
+  }
+  .dobra__fio {
+    display: none;
+  }
+}
+
+/* ---------- faixa de seção (rótulo · frase · link) ---------- */
+
+.faixa {
+  background: var(--cinza-faixa);
+}
+.faixa__dentro {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: start;
+  padding-block: 18px;
+}
+.faixa__rotulo {
+  text-transform: uppercase;
+  max-width: 12ch;
+}
+.faixa__frase {
+  max-width: 440px;
+}
+@media (max-width: 760px) {
+  .faixa__dentro {
+    grid-template-columns: 1fr auto;
+    gap: 8px 16px;
+  }
+  .faixa__rotulo {
+    max-width: none;
+  }
+  .faixa__frase {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+.secao {
+  padding-block: var(--secao);
+}
+.secao__selo {
+  margin-bottom: 18px;
+}
+.secao + .secao {
+  border-top: 1px solid var(--cinza-faixa);
+}
+
+/* ---------- vitrine ---------- */
+
+.vitrine {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 30px 72px;
+  align-items: start;
+}
+.vitrine--varios {
+  grid-template-columns: 1fr;
+}
+.vitrine__grade {
+  display: grid;
+  gap: 24px;
+}
+.vitrine--varios .vitrine__grade {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.card {
+  border: 1px solid var(--preto);
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+.card__capa {
+  aspect-ratio: 3 / 4;
+  background: var(--branco);
+  border-bottom: 1px solid var(--preto);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.card__capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 500ms;
+}
+.card:hover .card__capa img {
+  transform: scale(1.025);
+}
+.card__meta {
+  padding: 20px 20px 22px;
+  display: grid;
+  gap: 6px;
+}
+.card__titulo {
+  font-size: var(--t-corpo);
+  font-weight: 400;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.card__editora {
+  color: var(--cinza-texto);
+}
+.card__preco {
+  margin-top: 6px;
+}
+.card .seta {
+  margin-top: 8px;
+  justify-self: center;
+}
+
+.fatos {
+  border-top: 1px solid var(--preto);
+}
+.fatos li {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--cinza-faixa);
+}
+.fatos__n {
+  font-size: var(--t-sub);
+}
+.ponte {
+  margin-top: 30px;
+  font-size: var(--t-sub);
+  line-height: 1.3;
+}
+.ponte .seta {
+  font-size: var(--t-corpo);
+  margin-left: 6px;
+}
+.fatos h3 {
+  font-size: var(--t-sub);
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.fatos p {
+  line-height: 1.45;
+  color: var(--cinza-texto);
+}
+@media (max-width: 760px) {
+  .vitrine {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- o problema ---------- */
+
+.problema {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px 72px;
+  align-items: start;
+}
+.problema .titulo {
+  margin-bottom: 30px;
+}
+.lista-traco {
+  margin: 14px 0;
+  max-width: 640px;
+}
+.lista-traco li {
+  padding: 9px 0 9px 22px;
+  border-bottom: 1px solid var(--cinza-faixa);
+  position: relative;
+  line-height: 1.4;
+}
+.lista-traco li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+}
+.virada {
+  margin-top: 26px;
+  font-size: var(--t-sub);
+  line-height: 1.2;
+}
+.figura {
+  border: 1px solid var(--preto);
+}
+.figura img {
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  object-fit: cover;
+}
+.figura figcaption {
+  padding: 10px 12px;
+  border-top: 1px solid var(--preto);
+  font-size: var(--t-legenda);
+  color: var(--cinza-texto);
+}
+@media (max-width: 900px) {
+  .problema {
+    grid-template-columns: 1fr;
+  }
+  .problema .figura {
+    order: -1;
+  }
+}
+
+/* ---------- trajetória ---------- */
+
+.trajetoria__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px 72px;
+  align-items: end;
+  margin-bottom: 48px;
+}
+.etapas {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0 18px;
+  counter-reset: etapa;
+}
+.etapa {
+  border-top: 1px solid var(--preto);
+  padding-top: 16px;
+  transition: border-color 420ms;
+}
+/* A trajetória "acende" etapa por etapa quando a seção entra — só com JS e com movimento liberado.
+   Sem isso, todas as linhas já nascem pretas. */
+html.js.modulo:not(.sem-reveal) .etapas:not(.acesa) .etapa {
+  border-top-color: var(--cinza-borda);
+}
+.etapa__n {
+  display: block;
+  font-size: var(--t-titulo);
+  line-height: 1;
+  margin-bottom: 18px;
+}
+.etapa h3 {
+  font-size: var(--t-corpo);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.etapa p {
+  line-height: 1.45;
+  color: var(--cinza-texto);
+}
+@media (max-width: 1100px) {
+  .etapas {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .etapa {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 4px 16px;
+    padding: 18px 0;
+  }
+  .etapa__n {
+    grid-row: span 2;
+    font-size: 30px;
+    margin: 0;
+  }
+  .etapa:last-child {
+    border-bottom: 1px solid var(--preto);
+  }
+}
+@media (max-width: 900px) {
+  .trajetoria__intro {
+    grid-template-columns: 1fr;
+    margin-bottom: 28px;
+  }
+}
+
+/* ---------- benefícios ---------- */
+
+.beneficios {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 30px 72px;
+}
+.beneficios ul {
+  border-top: 1px solid var(--preto);
+}
+.beneficios li {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--cinza-faixa);
+}
+.beneficios h3 {
+  font-size: var(--t-sub);
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.beneficios p {
+  line-height: 1.45;
+  color: var(--cinza-texto);
+}
+@media (max-width: 900px) {
+  .beneficios {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- como começar ---------- */
+
+.passos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--preto);
+  margin: 40px 0 36px;
+}
+.passos li {
+  padding: 30px;
+}
+.passos li + li {
+  border-left: 1px solid var(--preto);
+}
+.passos__n {
+  display: block;
+  font-size: var(--t-titulo);
+  line-height: 1;
+  margin-bottom: 30px;
+}
+.passos h3 {
+  font-size: var(--t-sub);
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.passos p {
+  line-height: 1.45;
+  color: var(--cinza-texto);
+}
+.comecar__acao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.promessas {
+  margin-top: 56px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--preto);
+}
+.promessas > div {
+  padding: 26px 30px;
+}
+.promessas > div + div {
+  border-left: 1px solid var(--preto);
+}
+.promessas h3 {
+  margin-bottom: 14px;
+}
+.promessas li {
+  padding: 10px 0;
+  border-top: 1px solid var(--cinza-faixa);
+  line-height: 1.4;
+}
+.promessas__nao li {
+  color: var(--cinza-texto);
+}
+@media (max-width: 760px) {
+  .passos,
+  .promessas {
+    grid-template-columns: 1fr;
+  }
+  .passos li + li,
+  .promessas > div + div {
+    border-left: 0;
+    border-top: 1px solid var(--preto);
+  }
+  .passos li {
+    padding: 22px;
+  }
+  .passos__n {
+    margin-bottom: 16px;
+    font-size: 30px;
+  }
+  .comecar__acao,
+  .comecar__acao .botao {
+    width: 100%;
+  }
+}
+
+/* ---------- perguntas ---------- */
+
+.faq {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 30px 72px;
+}
+.faq__lista {
+  border-top: 1px solid var(--preto);
+}
+.faq details {
+  border-bottom: 1px solid var(--cinza-faixa);
+}
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 44px;
+  align-items: center;
+  padding: 16px 0;
+  font-size: var(--t-sub);
+  line-height: 1.2;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary::after {
+  content: '+';
+  flex: none;
+  font-weight: 400;
+}
+.faq details[open] summary::after {
+  content: '−';
+}
+.faq details p {
+  padding: 0 40px 20px 0;
+  line-height: 1.45;
+  max-width: 640px;
+}
+@media (max-width: 900px) {
+  .faq {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- fecho: a sala escura de volta ---------- */
+
+.fecho {
+  background: var(--preto);
+  color: var(--branco);
+  text-align: center;
+  padding: 122px var(--margem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.fecho .rotulo {
+  color: #bdbdbd;
+  margin-bottom: 20px;
+}
+.fecho h2 {
+  font-size: var(--t-display);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  max-width: 24ch;
+  text-wrap: balance;
+}
+.fecho p {
+  margin-top: 24px;
+  max-width: 520px;
+  line-height: 1.45;
+  color: #e6e6e6;
+}
+.fecho .botao {
+  margin-top: 32px;
+}
+.fecho .apoio {
+  color: #bdbdbd;
+}
+@media (max-width: 760px) {
+  .fecho {
+    padding-block: 80px;
+  }
+  .fecho .botao {
+    width: 100%;
+  }
+}
+
+/* ---------- rodapé ---------- */
+
+.rodape {
+  border-top: 1px solid var(--preto);
+  padding-block: 36px 28px;
+}
+.rodape__grade {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+  gap: 30px;
+}
+.rodape h2 {
+  margin-bottom: 12px;
+}
+.rodape li + li {
+  margin-top: 8px;
+}
+.rodape a {
+  text-decoration: none;
+}
+.rodape a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rodape address {
+  font-style: normal;
+  line-height: 1.5;
+}
+.rodape__fim {
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cinza-faixa);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: var(--t-legenda);
+  color: var(--cinza-texto);
+}
+@media (max-width: 760px) {
+  .rodape__grade {
+    grid-template-columns: 1fr 1fr;
+  }
+  .rodape__grade > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- barra fixa (só celular, depois da dobra) ---------- */
+
+.barra-fixa {
+  display: none;
+}
+@media (max-width: 760px) {
+  html.js .barra-fixa {
+    display: flex;
+    position: fixed;
+    z-index: 25;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 56px;
+    padding-bottom: env(safe-area-inset-bottom);
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--preto);
+    color: var(--branco);
+    font-size: var(--t-legenda);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transform: translateY(110%);
+    transition: transform 260ms;
+  }
+  html.js .barra-fixa.visivel {
+    transform: none;
+  }
+  /* A barra não pode cobrir o fim do rodapé. */
+  html.js body {
+    padding-bottom: 56px;
+  }
+}
+
+/* ---------- consentimento (só existe se houver ID de medição) ---------- */
+
+.consentimento {
+  position: fixed;
+  z-index: 40;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 2 * var(--margem)));
+  background: var(--branco);
+  border: 1px solid var(--preto);
+  padding: 18px 20px;
+  display: grid;
+  gap: 14px;
+  font-size: var(--t-legenda);
+  line-height: 1.45;
+}
+.consentimento[hidden] {
+  display: none;
+}
+.consentimento__acoes {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.consentimento .botao {
+  min-height: 36px;
+  padding: 0 16px;
+}
+@media (max-width: 760px) {
+  .consentimento {
+    bottom: 68px;
+  }
+}
+
+/* ---------- teste A/B da headline: decidido antes da primeira pintura ---------- */
+
+.v-b {
+  display: none;
+}
+html[data-v='b'] .v-a {
+  display: none;
+}
+html[data-v='b'] .v-b {
+  display: inline;
+}
+
+/* ---------- revelação (padrão do site-de-marca: só esconde enquanto a promessa vale) ---------- */
+
+html.js:not(.sem-reveal) .r {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease;
+}
+html.js:not(.sem-reveal) .r.visivel,
+/* `carregou` sem `modulo` = o script da página não rodou (bloqueado, falhou, não chegou):
+   o que ele revelaria volta a aparecer. */
+html.carregou:not(.modulo) .r {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .r {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .dobra__obra img {
+    transform: none !important;
+  }
+}
+
+/* Ação secundária sobre o branco (ex.: "Recusar"): mesmo peso visual de borda, sem preenchimento. */
+.botao--contorno {
+  background: var(--branco);
+  color: var(--preto);
+}
+.botao--contorno:hover {
+  background: var(--preto);
+  color: var(--branco);
+}
+
+/* Em 320px, "→ Começar pelo WhatsApp" sem quebra empurrava a faixa 6px para fora da tela. */
+@media (max-width: 380px) {
+  .faixa .seta {
+    white-space: normal;
+    text-align: right;
+  }
+}
+
+/* Celular deitado (ex.: 844×390): empilhado, a ação caía 200px abaixo da dobra. Lado a lado, o
+   livro continua na primeira tela e a ação também. */
+@media (max-height: 520px) and (min-width: 640px) {
+  .dobra {
+    min-height: 100svh;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    grid-template-rows: 86px auto auto 1fr;
+    column-gap: 32px;
+    justify-items: start;
+    text-align: left;
+    padding-bottom: 16px;
+  }
+  .dobra__selo {
+    grid-column: 2;
+    margin-bottom: 8px;
+  }
+  .dobra h1 {
+    grid-column: 2;
+    font-size: 32px;
+  }
+  .dobra__obra {
+    grid-column: 1;
+    grid-row: 2 / 5;
+    padding-top: 0;
+    justify-content: center;
+  }
+  .dobra__obra img {
+    max-height: 72svh;
+  }
+  .dobra__legenda,
+  .dobra__fio {
+    display: none;
+  }
+  .dobra__texto {
+    grid-column: 2;
+    grid-row: 3;
+    align-items: flex-start;
+    padding-top: 12px;
+  }
+  .dobra__acoes {
+    width: auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-top: 14px;
+  }
+  .dobra__acoes .botao {
+    width: auto;
+  }
+}
+
+/* Telas baixas e estreitas (320×568): o livro encolhe primeiro — a ação tem de caber. */
+@media (max-height: 620px) and (max-width: 400px) {
+  .dobra {
+    grid-template-rows: 80px auto minmax(90px, 1fr) auto;
+  }
+  .dobra__obra img {
+    max-height: 26svh;
+  }
+}

@@ -1,0 +1,12 @@
+{
+  // Publica a landing como Worker de assets estáticos — sem script de servidor: o campo `assets`
+  // sozinho serve o que o Astro gerou em ./dist.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "entend-landing-page",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Sem isto, um caminho errado devolve o index e a pessoa pensa que está na home.
+    "not_found_handling": "404-page"
+  }
+}

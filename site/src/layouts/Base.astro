@@ -1,0 +1,96 @@
+---
+/**
+ * O documento de toda página. O `<head>` mora numa camada só: página nova não nasce sem título,
+ * descrição e Open Graph, porque `titulo` e `descricao` são obrigatórios.
+ *
+ * `lang="pt-BR"` + `translate="no"`: sem eles o Chrome oferece tradução numa página em português e
+ * troca nome próprio — "Entend" e "Eliana de Goes" virariam outra coisa na tela do autor.
+ */
+import '@/styles/base.css'
+import fonte400 from '@/assets/fontes/inter-latin-400-normal.woff2?url'
+import fonte500 from '@/assets/fontes/inter-latin-500-normal.woff2?url'
+
+interface Props {
+  titulo: string
+  descricao: string
+  imagem?: string
+  semBusca?: boolean
+}
+
+const { titulo, descricao, imagem = 'og/entend.png', semBusca = false } = Astro.props
+const base = import.meta.env.BASE_URL
+const canonica = new URL(Astro.url.pathname, Astro.site).href
+const imagemAbsoluta = new URL(`${base}${imagem}`, Astro.site).href
+
+const GA4 = import.meta.env.PUBLIC_GA4_ID ?? ''
+const META = import.meta.env.PUBLIC_META_PIXEL_ID ?? ''
+
+/*
+ * Roda antes da primeira pintura, e por isso é inline e comprimido:
+ * - `js`: autoriza esconder o que vai se revelar. Posta depois da pintura, a página piscaria.
+ * - `carregou`: a VALIDADE dessa promessa. No `load` já se sabe se o módulo rodou (ele põe
+ *   `modulo`); se não rodou, o CSS devolve o conteúdo. O timer cobre a conexão que pendura.
+ * - `data-v`: variante do teste A/B da headline, sorteada uma vez e lembrada. Decidida aqui para
+ *   a troca não piscar. Sem JS (ou sem armazenamento), fica o controle.
+ */
+const PARTIDA = `(function(){var r=document.documentElement;r.classList.add('js');var f=function(){r.classList.add('carregou')};addEventListener('load',f);setTimeout(f,4000);try{var k='entend-ab-h1',v=localStorage.getItem(k);if(v!=='a'&&v!=='b'){v=Math.random()<.5?'a':'b';localStorage.setItem(k,v)}r.dataset.v=v}catch(e){r.dataset.v='a'}})()`
+---
+
+<!doctype html>
+<html lang="pt-BR" translate="no" data-v="a">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="google" content="notranslate" />
+
+    <title>{titulo}</title>
+    <meta name="description" content={descricao} />
+    <link rel="canonical" href={canonica} />
+    {semBusca && <meta name="robots" content="noindex, follow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Editora Entend Educacional" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:url" content={canonica} />
+    <meta property="og:image" content={imagemAbsoluta} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="O livro CME, de Eliana de Goes, sob um foco de luz numa sala escura." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titulo} />
+    <meta name="twitter:description" content={descricao} />
+    <meta name="twitter:image" content={imagemAbsoluta} />
+
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="preload" href={fonte400} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonte500} as="font" type="font/woff2" crossorigin />
+
+    <script is:inline set:html={PARTIDA} />
+    <slot name="cabeca" />
+  </head>
+  <body data-ga4={GA4 || undefined} data-meta={META || undefined}>
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+    <slot />
+    {
+      (GA4 || META) && (
+        <div class="consentimento" role="dialog" aria-label="Cookies de medição" hidden>
+          <p>
+            Usamos cookies de medição (Google Analytics e Meta) para saber se esta página ajuda
+            autores a chegar até nós. Nada é carregado sem a sua permissão.
+          </p>
+          <div class="consentimento__acoes">
+            <button class="botao botao--contorno" type="button" data-consent="nao">
+              Recusar
+            </button>
+            <button class="botao" type="button" data-consent="sim">
+              Aceitar
+            </button>
+          </div>
+        </div>
+      )
+    }
+  </body>
+</html>

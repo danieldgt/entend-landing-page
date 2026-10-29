@@ -1,0 +1,14 @@
+---
+import Base from '@/layouts/Base.astro'
+import { CTA, urlWhatsapp } from '@/conteudo/site'
+const base = import.meta.env.BASE_URL
+---
+
+<Base titulo="Página não encontrada — Entend" descricao="Esta página não existe. Volte para a página da Editora Entend." semBusca>
+  <main id="conteudo" class="fecho" style="min-height:100svh;justify-content:center">
+    <p class="rotulo">404:</p>
+    <h1 style="font-size:var(--t-display);font-weight:400;line-height:1;text-transform:uppercase">Esta página não existe.</h1>
+    <p><a class="seta" href={base}>Voltar para a Entend</a></p>
+    <a class="botao botao--claro" href={urlWhatsapp('404')}>{CTA}</a>
+  </main>
+</Base>
