@@ -36,7 +36,7 @@ interface ProdutoApi {
  * conhecido fica aqui — junto com a capa já recortada em fundo branco pelo `scripts/imagens`.
  */
 const CONHECIDOS: Record<string, { autor: string; capa: string }> = {
-  '019fc9a2-91e8-7c23-96d9-1cbb68431410': { autor: 'Eliana de Goes', capa: 'img/capa-cme-quadro.webp' },
+  '019fc9a2-91e8-7c23-96d9-1cbb68431410': { autor: 'Eliana de Goes', capa: 'img/capa-cme-recorte.webp' },
 }
 
 const real = (centavos: number) =>

@@ -297,6 +297,83 @@ def manuscrito(w, h):
     return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
 
 
+def _folha(fw, fh, linhas=True, titulo=False, r=None, marcas=False):
+    r = r or np.random.default_rng(1)
+    f = Image.new('RGBA', (fw, fh), (251, 250, 247, 255))
+    d = ImageDraw.Draw(f)
+    y = int(fh * 0.12)
+    if titulo:
+        d.rectangle([fw * 0.14, y, fw * 0.55, y + fh * 0.018], fill=(60, 60, 60, 255))
+        y += int(fh * 0.07)
+    while linhas and y < fh * 0.88:
+        fim = fw * (0.86 if r.random() > 0.2 else r.uniform(0.4, 0.75))
+        d.rectangle([fw * 0.14, y, fim, y + max(2, fh // 300)], fill=(178, 178, 176, 255))
+        if marcas and r.random() < 0.18:
+            x0 = fw * r.uniform(0.2, 0.6)
+            d.line([x0, y - 6, x0 + fw * 0.12, y - 2], fill=(90, 90, 90, 255), width=max(2, fw // 300))
+        y += int(fh * 0.028)
+    return f
+
+
+def _sobre_cinza(w, h, pecas):
+    """Cena de produto: fundo cinza-claro (#eee, o das obras da referência), luz da esquerda."""
+    im = Image.new('RGB', (w, h), (238, 238, 238))
+    a = np.asarray(im).astype(np.float32)
+    ys, xs = np.mgrid[0:h, 0:w].astype(np.float32)
+    a *= (0.96 + 0.06 * np.exp(-((xs - w * 0.3) / (w * 0.6)) ** 2))[..., None]
+    im = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+    for peca, (x, y), ang in pecas:
+        p = peca.rotate(ang, expand=True, resample=Image.BICUBIC)
+        sombra = Image.new('RGBA', p.size, (0, 0, 0, 0))
+        sombra.putalpha(p.getchannel('A').point(lambda v: int(v * 0.18)))
+        sombra = sombra.filter(ImageFilter.GaussianBlur(14))
+        im.paste(sombra, (x + 14, y + 12), sombra)
+        im.paste(p, (x, y), p)
+    return Image.fromarray(np.clip(grao(np.asarray(im).astype(np.float32), 1.6), 0, 255).astype(np.uint8))
+
+
+def provisorias(livro):
+    """Imagens PROVISÓRIAS da v2 (até as fotos do Nano Banana): mesma composição, tons claros."""
+    r = np.random.default_rng(5)
+    # objetos do carrossel — proporções iguais às de OBJETOS em site.ts
+    W = 1200
+    _sobre_cinza(W, 1500, [(_folha(620, 860, linhas=False), (290, 300), -4),
+                           (_folha(540, 120, linhas=True, r=r), (330, 560), -4)]).save(IMG / 'obj-ideia.webp', quality=84)
+    _sobre_cinza(W, 1600, [(_folha(760, 1060, titulo=True, r=r), (220, 270), 2)]).save(IMG / 'obj-sumario.webp', quality=84)
+    pilha = [(_folha(640, 900, r=r), (230 + i * 22, 120 + i * 10), -6 + i * 3) for i in range(5)]
+    _sobre_cinza(1500, 1200, pilha).save(IMG / 'obj-manuscrito.webp', quality=84)
+    _sobre_cinza(W, 1600, [(_folha(760, 1060, marcas=True, r=r), (220, 270), -2)]).save(IMG / 'obj-prova.webp', quality=84)
+    cartoes = []
+    for i, tom in enumerate([(30, 30, 30), (210, 206, 198), (150, 160, 170)]):
+        c = Image.new('RGBA', (360, 520), tom + (255,))
+        ImageDraw.Draw(c).rectangle([40, 360, 250, 372], fill=(255, 255, 255, 200))
+        cartoes.append((c, (140 + i * 300, 420 + (i % 2) * 60), -5 + i * 5))
+    _sobre_cinza(W, 1500, cartoes).save(IMG / 'obj-capa.webp', quality=84)
+    lv = livro.resize((int(livro.width * 900 / livro.height), 900), Image.LANCZOS)
+    _sobre_cinza(1400, 1400, [(lv, (360, 250), 0)]).save(IMG / 'obj-livro.webp', quality=84)
+    # capa recortada (alfa) para a peça à venda, sobre o cinza do CSS
+    lv2 = livro.resize((int(livro.width * 1500 / livro.height), 1500), Image.LANCZOS)
+    lv2.save(IMG / 'capa-cme-recorte.webp', quality=88)
+
+    # dobra provisória: parede clara, mesa de carvalho, o livro real em pé, folhas soltas
+    for nome, (w, h), cx in [('hero.webp', (2752, 1536), 0.5), ('hero-retrato.webp', (1080, 1620), 0.5)]:
+        ys, xs = np.mgrid[0:h, 0:w].astype(np.float32)
+        mesa = int(h * 0.72)
+        parede = 214 + 22 * np.exp(-((xs - w * 0.15) / (w * 0.7)) ** 2) - 10 * (ys / h)
+        madeira = 196 - 30 * ((ys - mesa) / (h - mesa))
+        v = np.where(ys < mesa, parede, madeira)
+        rgb = np.stack([v, v * 0.975, v * 0.94], axis=2)
+        im = Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3))
+        alt = int(h * 0.30)
+        lvh = livro.resize((int(livro.width * alt / livro.height), alt), Image.LANCZOS)
+        for i in range(3):
+            fo = _folha(int(alt * 0.62), int(alt * 0.85), r=r).rotate(80 + i * 6, expand=True)
+            im.paste(fo, (int(w * cx - alt * (1.4 - i * 0.5)), mesa - int(fo.height * 0.15)), fo)
+        im.paste(lvh, (int(w * cx - lvh.width / 2), mesa - alt + int(alt * 0.03)), lvh)
+        a = grao(np.asarray(im.convert('RGB')).astype(np.float32), 2.0)
+        Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(IMG / nome, quality=84)
+
+
 def main():
     IMG.mkdir(parents=True, exist_ok=True)
     OG.mkdir(parents=True, exist_ok=True)
@@ -314,6 +391,7 @@ def main():
     palco.resize((palco.width // 2, palco.height // 2), Image.LANCZOS).save(IMG / 'livro-palco-800.webp', quality=86)
     manuscrito(1600, 1100).save(IMG / 'manuscrito.webp', quality=86)
     og(livro).save(OG / 'entend.png', optimize=True)
+    provisorias(livro)
     print('ok:', *sorted(p.name for p in IMG.iterdir()), 'og/entend.png')
 
 

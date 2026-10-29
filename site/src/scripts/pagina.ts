@@ -176,23 +176,19 @@ if (!('IntersectionObserver' in window)) {
   }
 }
 
-/* ---------- o livro respira com a rolagem (só desktop, só com movimento liberado) ---------- */
-const livro = document.querySelector<HTMLElement>('[data-parallax]')
-if (livro && !quieto && matchMedia('(min-width: 761px)').matches) {
-  let pedido = false
-  addEventListener(
-    'scroll',
-    () => {
-      if (pedido) return
-      pedido = true
-      requestAnimationFrame(() => {
-        const y = Math.min(scrollY, innerHeight)
-        livro.style.transform = `translateY(${(y * 0.06).toFixed(1)}px)`
-        pedido = false
-      })
-    },
-    { passive: true },
-  )
-}
+/* ---------- carrossel: o fio de progresso acompanha a rolagem, como na referência ---------- */
+document.querySelectorAll<HTMLElement>('[data-carrossel]').forEach((c) => {
+  const trilho = c.querySelector<HTMLElement>('.carrossel__trilho')
+  const barra = c.querySelector<HTMLElement>('[data-progresso]')
+  if (!trilho || !barra) return
+  const atualizar = () => {
+    const total = trilho.scrollWidth
+    barra.style.width = `${(trilho.clientWidth / total) * 100}%`
+    barra.style.left = `${(trilho.scrollLeft / total) * 100}%`
+  }
+  trilho.addEventListener('scroll', atualizar, { passive: true })
+  addEventListener('resize', atualizar)
+  atualizar()
+})
 
 export {}

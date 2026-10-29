@@ -12,3 +12,4 @@ site/docs/
 .claude/workflows/
 .claude/skills/*
 !.claude/skills/entend-landing/
+v2-previa.png

@@ -86,3 +86,25 @@ export const FAQ = [
   ['Meu livro vai ser vendido onde?', 'No catálogo online da Entend, com pagamento online — o mesmo onde já está o livro de Eliana de Goes.'],
   ['Como compro um livro da Entend?', 'Pelo catálogo: escolha o livro, pague online ou reserve, e retire em Fortaleza apresentando o código do pedido.'],
 ] as const
+
+/*
+ * v2 — o corpo da página é um carrossel de OBJETOS, como as obras da PLATFORM: cada etapa da
+ * trajetória vira uma coisa fotografada. A última peça é o livro real, à venda no catálogo.
+ * `imagem` aponta para public/img/; `proporcao` varia de propósito (a referência mistura formatos).
+ */
+export const OBJETOS = [
+  { etapa: '01', nome: 'A primeira mensagem', fase: 'Conversa editorial', nota: 'Uma ideia já basta', imagem: 'img/obj-ideia.webp', proporcao: '4 / 5' },
+  { etapa: '02', nome: 'O sumário', fase: 'Estrutura', nota: 'Para quem é, o que promete', imagem: 'img/obj-sumario.webp', proporcao: '3 / 4' },
+  { etapa: '03', nome: 'O manuscrito', fase: 'Escrita', nota: 'Com rumo e acompanhamento', imagem: 'img/obj-manuscrito.webp', proporcao: '5 / 4' },
+  { etapa: '04', nome: 'A prova revisada', fase: 'Edição', nota: 'Clareza e voz', imagem: 'img/obj-prova.webp', proporcao: '3 / 4' },
+  { etapa: '05', nome: 'O estudo de capa', fase: 'Projeto gráfico', nota: 'Desejado antes de lido', imagem: 'img/obj-capa.webp', proporcao: '4 / 5' },
+  { etapa: '06', nome: 'O livro impresso', fase: 'Publicação', nota: 'Com o selo da Entend', imagem: 'img/obj-livro.webp', proporcao: '1 / 1' },
+] as const
+
+/* A lista tipográfica — o equivalente ao "SEASON ONE: AURA / 09.17.26 / EDDIE HUANG…" da referência. */
+export const PARA_QUEM = [
+  ['O especialista', 'que nunca escreveu'],
+  ['O manuscrito', 'parado na gaveta'],
+  ['A tese', 'que quer ser lida'],
+  ['A carreira', 'que merece um livro'],
+] as const
