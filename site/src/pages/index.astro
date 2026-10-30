@@ -1,9 +1,15 @@
 ---
 /**
- * A landing, v2 — composição tirada bloco a bloco da home da PLATFORM (docs/estudo-platform.md):
- * foto clara de ponta a ponta → faixa branca → carrossel de objetos → lista tipográfica →
- * promessas → perguntas → bloco-botão preto → rodapé de duas linhas.
- * Quase sem parágrafos: imagem, legenda e tipografia grande. O detalhe mora no FAQ.
+ * A landing, v3 — a composição da home da PLATFORM (docs/estudo-platform.md), agora com o
+ * movimento dela: dobra em carrossel com barra de progresso, peças que entram no quadro,
+ * tipografia que sobe linha a linha.
+ *
+ * dobra (3 slides) → faixa + carrossel de objetos → índice das sete etapas → lista tipográfica →
+ * o livro no catálogo → segundo carrossel (por que a Entend) → promessas → como começar →
+ * perguntas → bloco-botão preto → rodapé de duas linhas.
+ *
+ * Sem JavaScript tudo continua de pé: os carrosséis são trilhos com rolagem nativa (dá para
+ * arrastar com o dedo), as perguntas são <details>, e nada fica escondido à espera de animação.
  */
 import Base from '@/layouts/Base.astro'
 import {
@@ -14,8 +20,12 @@ import {
   FAQ,
   OBJETOS,
   PARA_QUEM,
+  PASSOS,
+  PORQUE,
   PROMESSAS,
   SEO,
+  SLIDES,
+  TRAJETORIA,
   urlCatalogo,
   urlWhatsapp,
 } from '@/conteudo/site'
@@ -24,7 +34,18 @@ import { livros } from '@/lib/catalogo'
 const base = import.meta.env.BASE_URL
 const img = (p: string) => `${base}${p}`
 const vitrine = await livros()
+const destaque = vitrine[0]
 const wa = urlWhatsapp()
+
+/** Para onde vai o link de cada slide: WhatsApp, catálogo ou uma âncora da página. */
+const destino = (acao: string, local: string) =>
+  acao === 'wa' ? wa : acao === 'catalogo' ? urlCatalogo(local) : acao
+const marca = (acao: string) =>
+  acao === 'wa' ? { 'data-wa': '' } : acao === 'catalogo' ? { 'data-catalogo': '' } : {}
+
+/* A imagem que acompanha cada etapa no índice: o objeto da etapa, e o livro real na última. */
+const imagemEtapa = (i: number) =>
+  OBJETOS[i]?.imagem ?? (destaque?.capaLocal ? destaque.capa : 'img/obj-livro.webp')
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -80,7 +101,7 @@ const jsonLd = {
     rel="preload"
     as="image"
     type="image/webp"
-    href={img('img/hero.webp')}
+    href={img(SLIDES[0].imagem)}
     media="(min-width: 761px)"
     fetchpriority="high"
   />
@@ -89,7 +110,7 @@ const jsonLd = {
     rel="preload"
     as="image"
     type="image/webp"
-    href={img('img/hero-retrato.webp')}
+    href={img(SLIDES[0].retrato)}
     media="(max-width: 760px)"
     fetchpriority="high"
   />
@@ -99,38 +120,83 @@ const jsonLd = {
     <a class="nav__marca" href={base}>ENTEND:</a>
     <div class="nav__links">
       <a href="#trajetoria">Trajetória</a>
-      <a href="#para-quem">Para quem</a>
+      <a href="#lancamento">Catálogo</a>
       <a href="#perguntas">Perguntas</a>
     </div>
     <a class="nav__cta" href={wa} data-wa data-local="nav">{CTA}</a>
   </nav>
 
   <main id="conteudo">
-    <!-- 1. DOBRA — foto clara de ponta a ponta, título centralizado sobre ela. -->
-    <section class="dobra" aria-labelledby="titulo-dobra">
-      <picture class="dobra__foto">
-        <source media="(max-width: 760px)" srcset={img('img/hero-retrato.webp')} />
-        <img
-          src={img('img/hero.webp')}
-          width="2752"
-          height="1536"
-          fetchpriority="high"
-          alt="Mesa de trabalho de um autor, com manuscritos e o livro CME, de Eliana de Goes, em pé sob a luz da janela."
-        />
-      </picture>
-      <div class="dobra__texto">
-        <h1 id="titulo-dobra">
-          <span class="v-a">Para autores:<br />seu conhecimento merece virar livro</span>
-          <span class="v-b">Para autores:<br />do manuscrito ao lançamento</span>
-        </h1>
-        <div class="dobra__pe">
-          <p>
-            A Entend acompanha você de perto, da primeira ideia ao lançamento — e seu livro chega à
-            vitrine pronto para ser vendido.
-          </p>
-          <a class="seta seta--clara" href={wa} data-wa data-local="dobra">{CTA}</a>
-          <span class="dobra__fio" aria-hidden="true"><span></span></span>
+    <!-- 1. DOBRA — carrossel de fotos de ponta a ponta, como o da referência. -->
+    <section class="dobra" aria-roledescription="carrossel" aria-label="Destaques da Entend" data-dobra>
+      <div class="dobra__trilho" data-trilho>
+        {
+          SLIDES.map((s, i) => (
+            <article
+              class:list={['slide', `slide--${s.tom}`, { ativo: i === 0 }]}
+              data-tom={s.tom}
+              aria-roledescription="slide"
+              aria-label={`${i + 1} de ${SLIDES.length}`}
+              data-slide
+            >
+              <picture class="slide__foto">
+                <source media="(max-width: 760px)" srcset={img(s.retrato)} />
+                <img
+                  src={img(s.imagem)}
+                  width="2752"
+                  height="1536"
+                  alt={s.alt}
+                  {...(i === 0 ? { fetchpriority: 'high' } : { loading: 'lazy', decoding: 'async' })}
+                />
+              </picture>
+              <div class="slide__texto">
+                {i === 0 ? (
+                  <h1 id="titulo-dobra" class="slide__titulo linhas">
+                    <span class="v-a">
+                      <span class="l"><span>Para autores:</span></span>
+                      <span class="l" style="--i:1"><span>seu conhecimento merece virar livro</span></span>
+                    </span>
+                    <span class="v-b">
+                      <span class="l"><span>Para autores:</span></span>
+                      <span class="l" style="--i:1"><span>do manuscrito ao lançamento</span></span>
+                    </span>
+                  </h1>
+                ) : (
+                  <h2 class="slide__titulo linhas">
+                    <span class="l"><span>{s.rotulo}</span></span>
+                    <span class="l" style="--i:1"><span>{s.titulo}</span></span>
+                  </h2>
+                )}
+                <div class="slide__pe">
+                  <p>{s.frase}</p>
+                  <a
+                    class="seta seta--clara"
+                    href={destino(s.acao, `dobra_${i + 1}`)}
+                    data-local={`dobra_${i + 1}`}
+                    {...marca(s.acao)}
+                    {...(i === 0 ? { 'data-cta': '' } : {})}
+                  >
+                    {s.rotuloAcao}
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+      <!-- A barra da referência: fio claro dividido em partes, trecho cheio = slide da vez. -->
+      <div class="dobra__controle" data-controle hidden>
+        <div class="dobra__fio" role="group" aria-label="Escolher destaque">
+          {
+            SLIDES.map((s, i) => (
+              <button type="button" data-ir={i} aria-label={`Destaque ${i + 1}: ${s.rotulo.replace(':', '')}`}>
+                <span />
+              </button>
+            ))
+          }
+          <span class="dobra__polegar" aria-hidden="true"><span data-tempo></span></span>
         </div>
+        <button class="dobra__pausa" type="button" data-pausa aria-pressed="false">Pausar</button>
       </div>
     </section>
 
@@ -145,9 +211,9 @@ const jsonLd = {
       <div class="carrossel" data-carrossel>
         <ol class="carrossel__trilho" tabindex="0" aria-label="Etapas da trajetória, role para o lado">
           {
-            OBJETOS.map((o) => (
-              <li class="peca">
-                <div class="peca__foto" style={`aspect-ratio:${o.proporcao}`}>
+            OBJETOS.map((o, i) => (
+              <li class="peca r" style={`--i:${i}`}>
+                <div class="peca__foto revela" style={`aspect-ratio:${o.proporcao}`}>
                   <img src={img(o.imagem)} alt="" loading="lazy" decoding="async" width="1200" height="1500" />
                 </div>
                 <div class="peca__legenda">
@@ -161,8 +227,8 @@ const jsonLd = {
           }
           {
             vitrine.map((l) => (
-              <li class="peca peca--venda">
-                <a class="peca__foto" style="aspect-ratio:3 / 4" href={urlCatalogo('peca')} data-catalogo data-local="peca">
+              <li class="peca peca--venda r" style={`--i:${OBJETOS.length}`}>
+                <a class="peca__foto revela" style="aspect-ratio:3 / 4" href={urlCatalogo('peca')} data-catalogo data-local="peca">
                   <img
                     src={l.capaLocal ? img(l.capa) : l.capa}
                     alt={`Capa do livro ${l.titulo}${l.autor ? `, de ${l.autor}` : ''}`}
@@ -183,30 +249,146 @@ const jsonLd = {
             ))
           }
         </ol>
-        <div class="carrossel__fio" aria-hidden="true"><span data-progresso></span></div>
+        <div class="carrossel__base">
+          <div class="carrossel__fio" aria-hidden="true"><span data-progresso></span></div>
+          <div class="carrossel__setas" data-setas hidden>
+            <button type="button" data-passo="-1" aria-label="Voltar">←</button>
+            <button type="button" data-passo="1" aria-label="Avançar">→</button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- 3. LISTA TIPOGRÁFICA — como o calendário "SEASON ONE: AURA" da referência. -->
-    <section class="lista" aria-labelledby="titulo-para-quem" id="para-quem">
-      <h2 id="titulo-para-quem">Para quem sabe muito:</h2>
-      <ul>
+    <!-- 3. ÍNDICE — as sete etapas por extenso. No mouse, o objeto da etapa segue o cursor. -->
+    <section class="indice" aria-labelledby="titulo-etapas" id="etapas" data-indice>
+      <div class="faixa caixa">
+        <h2 id="titulo-etapas" class="faixa__rotulo">As sete<br />etapas:</h2>
+        <p class="faixa__frase">Você sabe em que ponto está — e o que vem depois.</p>
+        <a class="seta" href={wa} data-wa data-local="faixa_etapas">Conversar com a Entend</a>
+      </div>
+      <ol class="indice__lista caixa">
         {
-          PARA_QUEM.map(([quem, situacao]) => (
+          TRAJETORIA.map(([nome, texto], i) => (
+            <li class="indice__item r" data-imagem={img(imagemEtapa(i))}>
+              <span class="indice__num num">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{nome}</h3>
+              <p>{texto}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="indice__previa" aria-hidden="true"><img alt="" data-previa /></div>
+    </section>
+
+    <!-- 4. LISTA TIPOGRÁFICA — como o calendário "SEASON ONE: AURA" da referência. -->
+    <section class="lista" aria-labelledby="titulo-para-quem" id="para-quem">
+      <h2 id="titulo-para-quem" class="linhas"><span class="l"><span>Para quem sabe muito:</span></span></h2>
+      <ul class="linhas">
+        {
+          PARA_QUEM.map(([quem, situacao], i) => (
             <li>
-              <span>{quem}</span>
-              <span>{situacao}</span>
+              <span class="l" style={`--i:${i * 2 + 1}`}><span>{quem}</span></span>
+              <span class="l" style={`--i:${i * 2 + 2}`}><span>{situacao}</span></span>
             </li>
           ))
         }
       </ul>
-      <p class="lista__fecho">
+      <p class="lista__fecho r">
         Se você se viu numa dessas linhas, a conversa começa no WhatsApp.
         <a class="seta" href={wa} data-wa data-local="lista">{CTA}</a>
       </p>
     </section>
 
-    <!-- 4. PROMESSAS — no lugar de uma garantia que não existe. -->
+    <!-- 5. O LIVRO NO CATÁLOGO — a ficha de obra da referência, com o livro real. -->
+    {
+      destaque && (
+        <section class="destaque" aria-labelledby="titulo-lancamento" id="lancamento">
+          <div class="faixa caixa">
+            <h2 id="titulo-lancamento" class="faixa__rotulo">No catálogo<br />Entend:</h2>
+            <p class="faixa__frase">O primeiro livro lançado. O seu pode ser o próximo.</p>
+            <a class="seta" href={urlCatalogo('faixa_lancamento')} data-catalogo data-local="faixa_lancamento">Ver catálogo</a>
+          </div>
+          <div class="destaque__grade caixa">
+            <a class="destaque__foto revela" href={urlCatalogo('destaque_capa')} data-catalogo data-local="destaque_capa">
+              <img
+                src={destaque.capaLocal ? img(destaque.capa) : destaque.capa}
+                alt={`Capa do livro ${destaque.titulo}${destaque.autor ? `, de ${destaque.autor}` : ''}`}
+                loading="lazy"
+                decoding="async"
+                width="1007"
+                height="1500"
+              />
+            </a>
+            <div class="destaque__ficha r">
+              <p class="rotulo">{destaque.autor ?? 'Autor Entend'}</p>
+              <h3>{destaque.titulo}</h3>
+              <dl>
+                <div>
+                  <dt>Editora</dt>
+                  <dd>{CONTATO.editora}</dd>
+                </div>
+                <div>
+                  <dt>Preço</dt>
+                  <dd class="num">{destaque.preco}</dd>
+                </div>
+                <div>
+                  <dt>Compra</dt>
+                  <dd>Pagamento online ou reserva, no catálogo</dd>
+                </div>
+                <div>
+                  <dt>Retirada</dt>
+                  <dd>Em Fortaleza — {CONTATO.endereco.replace(', Fortaleza/CE', '')}</dd>
+                </div>
+                <div>
+                  <dt>Entrega</dt>
+                  <dd>
+                    Ainda não. Mora fora de Fortaleza?{' '}
+                    <a href={wa} data-wa data-local="destaque_entrega">Fale com a Entend</a>.
+                  </dd>
+                </div>
+              </dl>
+              <a class="cheio" href={urlCatalogo('destaque_botao')} data-catalogo data-local="destaque_botao">Ver no catálogo</a>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- 6. SEGUNDO CARROSSEL — o "DISCOVER OUR COLLABORATIONS" da referência. -->
+    <section aria-labelledby="titulo-porque" id="por-que">
+      <div class="faixa caixa">
+        <h2 id="titulo-porque" class="faixa__rotulo">Por que<br />a Entend:</h2>
+        <p class="faixa__frase">Cinco motivos para não fazer isso sozinho.</p>
+        <a class="seta" href={wa} data-wa data-local="faixa_porque">{CTA}</a>
+      </div>
+      <div class="carrossel carrossel--tipo" data-carrossel>
+        <ol class="carrossel__trilho" tabindex="0" aria-label="Motivos, role para o lado">
+          {
+            PORQUE.map((p, i) => (
+              <li class="peca r" style={`--i:${i}`}>
+                <div class="peca__foto peca__tipo" aria-hidden="true">
+                  <span>{p.palavra}</span>
+                </div>
+                <div class="peca__legenda">
+                  <p class="peca__autor num">{String(i + 1).padStart(2, '0')}</p>
+                  <h3>{p.nome}</h3>
+                  <p class="peca__nota">{p.texto}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <div class="carrossel__base">
+          <div class="carrossel__fio" aria-hidden="true"><span data-progresso></span></div>
+          <div class="carrossel__setas" data-setas hidden>
+            <button type="button" data-passo="-1" aria-label="Voltar">←</button>
+            <button type="button" data-passo="1" aria-label="Avançar">→</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. PROMESSAS — no lugar de uma garantia que não existe. -->
     <section aria-labelledby="titulo-promessas">
       <div class="faixa caixa">
         <h2 id="titulo-promessas" class="faixa__rotulo">O que<br />prometemos:</h2>
@@ -214,16 +396,38 @@ const jsonLd = {
         <a class="seta" href={wa} data-wa data-local="faixa_promessas">Conversar com a Entend</a>
       </div>
       <div class="promessas caixa">
-        <ul>{PROMESSAS.sim.map((p) => <li>{p}</li>)}</ul>
+        <ul>{PROMESSAS.sim.map((p, i) => <li class="r" style={`--i:${i}`}>{p}</li>)}</ul>
         <ul class="promessas__nao">
-          <li>Não prometemos best-seller.</li>
-          <li>Não prometemos atalhos que pulam a edição.</li>
-          <li>Não prometemos que o livro se escreve sozinho.</li>
+          <li class="r" style="--i:1">Não prometemos best-seller.</li>
+          <li class="r" style="--i:2">Não prometemos atalhos que pulam a edição.</li>
+          <li class="r" style="--i:3">Não prometemos que o livro se escreve sozinho.</li>
         </ul>
       </div>
     </section>
 
-    <!-- 5. PERGUNTAS — <details>: a resposta está no HTML mesmo fechada (Google e Ctrl+F). -->
+    <!-- 8. COMO COMEÇAR — três passos e o botão cheio. -->
+    <section class="comecar" aria-labelledby="titulo-comecar" id="comecar">
+      <div class="faixa caixa">
+        <h2 id="titulo-comecar" class="faixa__rotulo">Como<br />começar:</h2>
+        <p class="faixa__frase">Três passos, e o primeiro cabe numa mensagem.</p>
+      </div>
+      <ol class="comecar__passos caixa">
+        {
+          PASSOS.map(([titulo, texto], i) => (
+            <li class="r" style={`--i:${i}`}>
+              <span class="comecar__num num">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{titulo}</h3>
+              <p>{texto}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="caixa comecar__acao r">
+        <a class="cheio" href={wa} data-wa data-local="comecar">{CTA}</a>
+      </div>
+    </section>
+
+    <!-- 9. PERGUNTAS — <details>: a resposta está no HTML mesmo fechada (Google e Ctrl+F). -->
     <section aria-labelledby="titulo-perguntas" id="perguntas">
       <div class="faixa caixa">
         <h2 id="titulo-perguntas" class="faixa__rotulo">Perguntas<br />de autores:</h2>
@@ -242,16 +446,16 @@ const jsonLd = {
       </div>
     </section>
 
-    <!-- 6. BLOCO-BOTÃO — o "EXPLORE THE ARCHIVE" da referência. -->
+    <!-- 10. BLOCO-BOTÃO — o "EXPLORE THE ARCHIVE" da referência. -->
     <section class="bloco" aria-labelledby="titulo-bloco" data-fecho>
       <h2 id="titulo-bloco" class="so-leitor">Comece pelo WhatsApp</h2>
-      <p class="bloco__antes">Não sabe se a sua ideia vira livro? Essa é a primeira pergunta que respondemos juntos.</p>
-      <a class="bloco__botao" href={wa} data-wa data-local="fecho">{CTA}</a>
+      <p class="bloco__antes r">Não sabe se a sua ideia vira livro? Essa é a primeira pergunta que respondemos juntos.</p>
+      <a class="bloco__botao r" href={wa} data-wa data-local="fecho"><span>{CTA}</span></a>
       <p class="bloco__depois">{CTA_APOIO}</p>
     </section>
   </main>
 
-  <!-- 7. RODAPÉ — duas linhas, como a referência (WhatsApp no lugar da newsletter). -->
+  <!-- RODAPÉ — duas linhas, como a referência (WhatsApp no lugar da newsletter). -->
   <footer class="rodape caixa">
     <div class="rodape__linha">
       <p>A conversa editorial começa no WhatsApp — de onde você estiver.</p>

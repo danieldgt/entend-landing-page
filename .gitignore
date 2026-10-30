@@ -13,3 +13,6 @@ site/docs/
 .claude/skills/*
 !.claude/skills/entend-landing/
 v2-previa.png
+
+# Brutos do lote de IA (PNG em 2K): só o que foi aprovado vai para public/img.
+site/scripts/imagens/ia/brutos/

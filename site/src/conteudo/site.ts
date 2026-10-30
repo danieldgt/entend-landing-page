@@ -101,6 +101,62 @@ export const OBJETOS = [
   { etapa: '06', nome: 'O livro impresso', fase: 'Publicação', nota: 'Com o selo da Entend', imagem: 'img/obj-livro.webp', proporcao: '1 / 1' },
 ] as const
 
+/*
+ * v3 — a dobra é um carrossel, como a da referência: cada slide é uma foto de ponta a ponta com
+ * RÓTULO: / TÍTULO em maiúsculas, uma frase e um link. O primeiro slide é o da ação principal (e o
+ * único com <h1>); os outros apresentam o livro lançado e o caminho.
+ * `tom`: 'foto' = foto clara com véu e texto branco (o padrão da referência); 'escura' = sala
+ * escura, sem véu; 'clara' = parede branca, texto preto.
+ * `href` com '#' é âncora da página; 'wa' e 'catalogo' viram os links com atribuição.
+ */
+export const SLIDES = [
+  {
+    rotulo: 'Para autores:',
+    titulo: '', // o h1 do teste A/B, escrito na página
+    frase: 'A Entend acompanha você de perto, da primeira ideia ao lançamento — e seu livro chega à vitrine pronto para ser vendido.',
+    rotuloAcao: CTA,
+    imagem: 'img/hero.webp',
+    retrato: 'img/hero-retrato.webp',
+    alt: 'Mesa de trabalho de um autor, com manuscritos e o livro CME, de Eliana de Goes, em pé sob a luz da janela.',
+    tom: 'foto',
+    acao: 'wa',
+  },
+  {
+    rotulo: 'Lançamento:',
+    titulo: 'Eliana de Goes',
+    frase: 'CME e a Jornada da Segurança do Paciente no Hospital — o primeiro livro do catálogo Entend, à venda online.',
+    imagem: 'img/dobra-palco.webp',
+    retrato: 'img/dobra-palco-retrato.webp',
+    alt: 'O livro CME, de Eliana de Goes, sob um foco de luz numa sala escura.',
+    tom: 'escura',
+    acao: 'catalogo',
+    rotuloAcao: 'Ver no catálogo',
+  },
+  {
+    rotulo: 'Trajetória:',
+    titulo: 'da ideia à vitrine',
+    frase: 'Sete etapas, um interlocutor só. Cada uma deixa um objeto na mesa — o último é o livro à venda.',
+    imagem: 'img/dobra-parede.webp',
+    retrato: 'img/dobra-parede-retrato.webp',
+    alt: 'Parede de galeria com os objetos de cada etapa de um livro: bilhete, sumário, manuscrito, prova, estudos de capa e o livro.',
+    tom: 'clara',
+    acao: '#trajetoria',
+    rotuloAcao: 'Ver a trajetória',
+  },
+] as const
+
+/*
+ * Segundo carrossel — o "DISCOVER OUR COLLABORATIONS" da referência. Sem foto ainda: cada peça é
+ * uma obra tipográfica sobre o cinza das peças. Quando o lote de IA gerar `imagem`, ela entra.
+ */
+export const PORQUE = [
+  { palavra: 'Um', nome: 'Um interlocutor', texto: BENEFICIOS[0][1] },
+  { palavra: 'Perto', nome: 'Acompanhamento de perto', texto: BENEFICIOS[1][1] },
+  { palavra: 'Vitrine', nome: 'Seu livro já nasce à venda', texto: BENEFICIOS[2][1] },
+  { palavra: 'Portas', nome: 'Autoridade que fica', texto: BENEFICIOS[3][1] },
+  { palavra: 'Aula', nome: 'Uma casa de educação', texto: BENEFICIOS[4][1] },
+] as const
+
 /* A lista tipográfica — o equivalente ao "SEASON ONE: AURA / 09.17.26 / EDDIE HUANG…" da referência. */
 export const PARA_QUEM = [
   ['O especialista', 'que nunca escreveu'],

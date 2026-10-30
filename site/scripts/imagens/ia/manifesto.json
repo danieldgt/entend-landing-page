@@ -1,0 +1,128 @@
+{
+  "modelo": "gemini-3-pro-image",
+  "estilo": "Editorial still-life photograph for a contemporary art gallery catalogue, white-cube aesthetic. Soft natural north-window daylight from the upper left, one long gentle diffused shadow falling to the right, no harsh highlights, no flash, no strong vignette. Medium-format camera, 80mm lens, f/8, eye level, true-to-color, very subtle film grain, matte finish. Minimal composition with generous negative space; the object is isolated like a precious artwork. Palette: paper white, warm light grays, graphite; the only saturated color comes from the object itself. Keep the same light, backdrop and paper as the reference images.",
+  "evitar": "No people, no hands, no faces. No legible text, letters, numbers, logos or watermarks anywhere, except the real book cover when a cover reference is given, which must be reproduced exactly as in the reference, without changing any letter. No props beyond the ones described. No lifestyle staging, no plants, no coffee cups.",
+  "referencias": {
+    "ref-luz": "scripts/imagens/referencias/ref-luz.webp",
+    "ref-papel": "scripts/imagens/referencias/ref-papel.webp",
+    "ref-sala": "scripts/imagens/referencias/ref-sala.webp",
+    "capa": "scripts/imagens/fontes/capa-cme.png"
+  },
+  "imagens": [
+    {
+      "id": "ref-luz",
+      "grupo": "referencia",
+      "uso": "âncora: fundo, luz e sombra de toda foto de objeto",
+      "prompt": "An empty matte white cube plinth standing on a seamless light-gray paper backdrop (#eeeeee) that curves from floor to wall. Nothing else in frame.",
+      "refs": [],
+      "variantes": [{ "saida": "scripts/imagens/referencias/ref-luz.webp", "proporcao": "4:5", "largura": 1200 }]
+    },
+    {
+      "id": "ref-papel",
+      "grupo": "referencia",
+      "uso": "âncora: material (papel, grafite, clipe)",
+      "prompt": "Close-up of a neat stack of off-white uncoated manuscript paper, slightly fanned, held by one small black binder clip, a graphite pencil lying parallel beside it, on a seamless light-gray backdrop. The printed lines on the pages are a soft illegible gray rhythm, not readable text.",
+      "refs": ["ref-luz"],
+      "variantes": [{ "saida": "scripts/imagens/referencias/ref-papel.webp", "proporcao": "4:5", "largura": 1200 }]
+    },
+    {
+      "id": "ref-sala",
+      "grupo": "referencia",
+      "uso": "âncora: o espaço (sala de galeria) das fotos de dobra",
+      "prompt": "An empty white-cube gallery room: white walls, pale polished concrete floor, a tall window out of frame on the left letting in soft diffused daylight, a single low white plinth in the middle distance. Calm, quiet, nothing on the walls.",
+      "refs": ["ref-luz"],
+      "variantes": [{ "saida": "scripts/imagens/referencias/ref-sala.webp", "proporcao": "16:9", "largura": 1600 }]
+    },
+
+    {
+      "id": "hero-autor",
+      "uso": "dobra, slide 1 (Para autores) — substitui a cena desenhada por código",
+      "prompt": "A pale oak writing desk against a warm white wall in a quiet sunlit studio. On the desk, slightly right of center, the book from the reference image stands upright, cover facing the camera. Beside it a small neat stack of manuscript pages with a black binder clip and a graphite pencil. The upper third of the frame is calm empty wall (space for a large white headline) and the bottom strip is plain desk surface (space for a short sentence).",
+      "refs": ["capa", "ref-sala", "ref-papel"],
+      "variantes": [
+        { "saida": "public/img/hero.webp", "proporcao": "16:9", "largura": 2400 },
+        { "saida": "public/img/hero-retrato.webp", "proporcao": "9:16", "largura": 1080 }
+      ]
+    },
+    {
+      "id": "dobra-palco",
+      "uso": "dobra, slide 2 (Lançamento: Eliana de Goes)",
+      "prompt": "A darkened gallery room. The book from the reference image stands upright on a low white plinth in the center, lit from above by a single narrow spotlight that makes a soft pool of light on the plinth top; the walls fall off into deep charcoal. The book is small in the frame, in the lower-middle; the top third is dark empty wall.",
+      "refs": ["capa", "ref-sala"],
+      "variantes": [
+        { "saida": "public/img/dobra-palco.webp", "proporcao": "16:9", "largura": 2400 },
+        { "saida": "public/img/dobra-palco-retrato.webp", "proporcao": "9:16", "largura": 1080 }
+      ]
+    },
+    {
+      "id": "dobra-parede",
+      "uso": "dobra, slide 3 (Trajetória: da ideia à vitrine)",
+      "prompt": "A long white gallery wall seen straight on, with six small unframed objects hung in a single row at eye level, evenly spaced, like a museum display of a book's making: a folded handwritten note, an index card table of contents, a thick manuscript with a binder clip, a page proof with red pencil marks, three printed cover color studies, and a finished book with a plain linen cover. Pale concrete floor at the bottom. The upper third is empty wall.",
+      "refs": ["ref-sala", "ref-papel"],
+      "variantes": [
+        { "saida": "public/img/dobra-parede.webp", "proporcao": "16:9", "largura": 2400 },
+        { "saida": "public/img/dobra-parede-retrato.webp", "proporcao": "9:16", "largura": 1080 }
+      ]
+    },
+    {
+      "id": "dobra-escola",
+      "uso": "reserva para um 4º slide (Uma casa de educação) — ainda fora da página",
+      "prompt": "An empty, bright classroom in a tropical city in the morning: rows of simple light wooden chairs facing a plain white wall, a small lectern at the front, tall windows on the left with soft daylight and a hint of green outside. No people, no screens, no writing on the walls.",
+      "refs": ["ref-sala"],
+      "variantes": [
+        { "saida": "public/img/dobra-escola.webp", "proporcao": "16:9", "largura": 2400 },
+        { "saida": "public/img/dobra-escola-retrato.webp", "proporcao": "9:16", "largura": 1080 }
+      ]
+    },
+
+    {
+      "id": "obj-ideia",
+      "uso": "carrossel, etapa 01 — A primeira mensagem",
+      "prompt": "A single small folded note card, slightly open, with a few illegible handwritten graphite lines, lying on the backdrop, a short pencil next to it. Centered, small in frame.",
+      "refs": ["ref-luz", "ref-papel"],
+      "variantes": [{ "saida": "public/img/obj-ideia.webp", "proporcao": "4:5", "largura": 1200 }]
+    },
+    {
+      "id": "obj-sumario",
+      "uso": "carrossel, etapa 02 — O sumário",
+      "prompt": "Nine white index cards laid out in a neat 3 by 3 grid on the backdrop, each with a short illegible handwritten line and a small number-like mark, one card slightly askew. Seen from a high angle.",
+      "refs": ["ref-luz", "ref-papel"],
+      "variantes": [{ "saida": "public/img/obj-sumario.webp", "proporcao": "3:4", "largura": 1200 }]
+    },
+    {
+      "id": "obj-manuscrito",
+      "uso": "carrossel, etapa 03 — O manuscrito",
+      "prompt": "A thick stack of typed manuscript pages, edges slightly uneven, held by a black binder clip, lying on the backdrop at a slight angle. Lines of type are an illegible gray texture.",
+      "refs": ["ref-luz", "ref-papel"],
+      "variantes": [{ "saida": "public/img/obj-manuscrito.webp", "proporcao": "5:4", "largura": 1500 }]
+    },
+    {
+      "id": "obj-prova",
+      "uso": "carrossel, etapa 04 — A prova revisada",
+      "prompt": "A single typeset page proof lying on the backdrop, covered with fine red-pencil editing marks: circles, strike-throughs and margin ticks. A red pencil rests diagonally across the bottom corner. Type is an illegible gray texture; the red marks are the only color.",
+      "refs": ["ref-luz", "ref-papel"],
+      "variantes": [{ "saida": "public/img/obj-prova.webp", "proporcao": "3:4", "largura": 1200 }]
+    },
+    {
+      "id": "obj-capa",
+      "uso": "carrossel, etapa 05 — O estudo de capa",
+      "prompt": "Three printed book-cover color studies of the same size, slightly overlapping and fanned on the backdrop: one pale sky blue, one off-white, one graphite black, each with only a simple abstract block where the title would be. A small paper color swatch fan beside them.",
+      "refs": ["ref-luz", "ref-papel"],
+      "variantes": [{ "saida": "public/img/obj-capa.webp", "proporcao": "4:5", "largura": 1200 }]
+    },
+    {
+      "id": "obj-livro",
+      "uso": "carrossel, etapa 06 — O livro impresso",
+      "prompt": "A freshly printed book with a plain off-white linen cover and no text, standing slightly open on a small white plinth on the backdrop, pages catching the window light.",
+      "refs": ["ref-luz"],
+      "variantes": [{ "saida": "public/img/obj-livro.webp", "proporcao": "1:1", "largura": 1400 }]
+    },
+    {
+      "id": "capa-foto",
+      "uso": "ficha do livro (No catálogo Entend) — alternativa fotográfica ao recorte",
+      "prompt": "The book from the reference image standing upright on the seamless light-gray backdrop, cover facing the camera at a very slight angle, with its soft shadow falling to the right. Reproduce the cover exactly.",
+      "refs": ["capa", "ref-luz"],
+      "variantes": [{ "saida": "public/img/capa-cme-foto.webp", "proporcao": "4:5", "largura": 1400 }]
+    }
+  ]
+}

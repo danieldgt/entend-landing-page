@@ -65,6 +65,11 @@ Referência: platformart.com (estudo em `docs/estudo-platform.md`). Tokens em `s
   link `› …` à direita.
 - Ação = link de texto com `→`, sublinhado. Botão preenchido só na dobra, em "Como começar" e no fecho (raio 0). Navegação: caixa branca flutuante centralizada (~470px), não barra cheia. Dobra com texto centralizado em MAIÚSCULAS.
 - Rótulos com dois-pontos, como a referência: `LANÇAMENTO:`, `ENTEND:`.
+- Movimento (v3, medido na referência): dobra em carrossel (slides trocam a cada 6,5s; o trecho
+  cheio da barra anda 0,6s; botão Pausar; parado com `prefers-reduced-motion`); seta que anda 4px
+  no hover (0,5s ease-in-out); nav que abre do centro e some ao descer. Três gestos de entrada, com
+  a curva `--suave`: `.r` (sobe e aparece), `.linhas` (cada linha sobe de uma máscara) e `.revela`
+  (a imagem entra no quadro de baixo para cima). Nada fica escondido sem JS: `carregou` devolve tudo.
 
 Teste anti-clone: a primeira dobra mostra a capa real e a autora real — trocar o logo não funciona.
 
@@ -78,9 +83,19 @@ Teste anti-clone: a primeira dobra mostra a capa real e a autora real — trocar
 
 ## Imagens
 
-`scripts/imagens/` gera as imagens por código (Python + Pillow/numpy): o hero é uma sala escura com
-a capa real sob um foco. Se houver `OPENAI_API_KEY` em `~/git/ENTEND/.env`, `gerar-ia.sh` produz
-alternativas fotográficas — sempre conferir o resultado com Read antes de usar. Nunca gerar rosto
+Duas fontes:
+
+1. **Provisórias, por código**: `scripts/imagens/gerar.py` (Python + Pillow/numpy) desenha as cenas
+   a partir da capa real: o livro na mesa (slide 1), o livro no palco escuro (slide 2), a parede com
+   os objetos (slide 3) e os objetos do carrossel.
+2. **Definitivas, por IA**: `scripts/imagens/ia/`. Regras em `estilo.md`, um prompt por imagem em
+   `manifesto.json`, e o lote em `lote.py` (`--listar`, `--so`, `--aplicar`). Todo pedido leva o
+   mesmo estilo e as mesmas âncoras de `scripts/imagens/referencias/` (luz, papel, sala) mais a capa
+   real, para que as imagens novas saiam da mesma família. A chave é a `GEMINI_API_KEY` de
+   `~/git/ENTEND/.env`, e precisa de **faturamento ativo** (no plano gratuito a cota de imagem é
+   zero e a API responde 429).
+
+Sempre conferir com Read (o lote gera `brutos/folha.png`) antes de `--aplicar`. Nunca gerar rosto
 de pessoa real (a autora) por IA.
 
 ## Provar

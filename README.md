@@ -33,3 +33,8 @@ Variáveis do repositório (Settings → Secrets and variables → Actions → V
 
 Geradas por código a partir da capa real (`site/scripts/imagens/gerar.py`, precisa de `pillow` e
 `numpy`). Mudou a capa? Troque `site/scripts/imagens/fontes/capa-cme.png` e rode o script.
+
+As fotos definitivas saem de um lote de IA com estilo fixo: `site/scripts/imagens/ia/` tem o guia
+(`estilo.md`), o prompt de cada imagem (`manifesto.json`) e o gerador (`lote.py`). As âncoras de
+estilo ficam em `site/scripts/imagens/referencias/`. Precisa de `GEMINI_API_KEY` com faturamento
+ativo.

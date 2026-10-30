@@ -355,22 +355,65 @@ def provisorias(livro):
     lv2 = livro.resize((int(livro.width * 1500 / livro.height), 1500), Image.LANCZOS)
     lv2.save(IMG / 'capa-cme-recorte.webp', quality=88)
 
-    # dobra provisória: parede clara, mesa de carvalho, o livro real em pé, folhas soltas
-    for nome, (w, h), cx in [('hero.webp', (2752, 1536), 0.5), ('hero-retrato.webp', (1080, 1620), 0.5)]:
+    # dobra provisória: parede clara, mesa de carvalho, o livro real em pé
+    # v3: mesa mais baixa, livro menor e sem as folhas soltas — o título da dobra (72px, três
+    # linhas) passa pela parede, não pela capa, e a frase de baixo cai na madeira lisa.
+    for nome, (w, h), cx, f_mesa, f_alt in [('hero.webp', (2752, 1536), 0.5, 0.80, 0.25),
+                                            ('hero-retrato.webp', (1080, 1620), 0.5, 0.74, 0.22)]:
         ys, xs = np.mgrid[0:h, 0:w].astype(np.float32)
-        mesa = int(h * 0.72)
+        mesa = int(h * f_mesa)
         parede = 214 + 22 * np.exp(-((xs - w * 0.15) / (w * 0.7)) ** 2) - 10 * (ys / h)
         madeira = 196 - 30 * ((ys - mesa) / (h - mesa))
         v = np.where(ys < mesa, parede, madeira)
         rgb = np.stack([v, v * 0.975, v * 0.94], axis=2)
         im = Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3))
-        alt = int(h * 0.30)
+        alt = int(h * f_alt)
         lvh = livro.resize((int(livro.width * alt / livro.height), alt), Image.LANCZOS)
-        for i in range(3):
-            fo = _folha(int(alt * 0.62), int(alt * 0.85), r=r).rotate(80 + i * 6, expand=True)
-            im.paste(fo, (int(w * cx - alt * (1.4 - i * 0.5)), mesa - int(fo.height * 0.15)), fo)
         im.paste(lvh, (int(w * cx - lvh.width / 2), mesa - alt + int(alt * 0.03)), lvh)
         a = grao(np.asarray(im.convert('RGB')).astype(np.float32), 2.0)
+        Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(IMG / nome, quality=84)
+
+
+def dobras(livro):
+    """Slides 2 e 3 da dobra (o carrossel da referência tem quatro): o livro no palco escuro e a
+    parede de galeria com os objetos da trajetória pendurados como obras. Também PROVISÓRIOS:
+    o manifesto em `ia/manifesto.json` tem a versão fotográfica de cada um."""
+    palco = livro_no_palco(livro, alt=900)
+    for nome, (w, h), alt_frac, base_frac in [('dobra-palco.webp', (2752, 1536), 0.27, 0.78),
+                                              ('dobra-palco-retrato.webp', (1080, 1620), 0.22, 0.75)]:
+        im = sala_central(w, h).convert('RGBA')
+        alt = int(h * alt_frac)
+        p = palco.resize((int(palco.width * alt / palco.height), alt), Image.LANCZOS)
+        im.alpha_composite(p, ((w - p.width) // 2, int(h * base_frac) - alt))
+        im.convert('RGB').save(IMG / nome, quality=84)
+
+    objs = ['obj-ideia', 'obj-sumario', 'obj-manuscrito', 'obj-prova', 'obj-capa', 'obj-livro']
+    for nome, (w, h), quais in [('dobra-parede.webp', (2752, 1536), objs),
+                                ('dobra-parede-retrato.webp', (1080, 1620), objs[2:5])]:
+        ys, xs = np.mgrid[0:h, 0:w].astype(np.float32)
+        piso = int(h * 0.84)
+        # parede branca de galeria, luz de cima (trilho de spots) e piso de cimento claro
+        parede = 236 - 14 * (ys / h) + 8 * np.exp(-((ys - h * 0.1) / (h * 0.3)) ** 2)
+        chao = 200 - 26 * ((ys - piso) / (h - piso))
+        v = np.where(ys < piso, parede, chao)
+        im = Image.fromarray(np.clip(np.stack([v, v * 0.99, v * 0.97], axis=2), 0, 255).astype(np.uint8))
+        # cada obra com a altura proporcional à largura da tela; centro na altura do olho
+        alt = int(min(h * 0.22, w / (len(quais) * 1.5)))
+        pecas = [Image.open(IMG / f'{q}.webp').convert('RGB') for q in quais]
+        pecas = [pc.resize((int(pc.width * alt / pc.height), alt), Image.LANCZOS) for pc in pecas]
+        vao = int(alt * 0.38)
+        total = sum(pc.width for pc in pecas) + vao * (len(pecas) - 1)
+        x, cy = (w - total) // 2, int(h * 0.63)
+        for pc in pecas:
+            y = cy - pc.height // 2
+            sombra = Image.new('L', (pc.width + 80, pc.height + 80), 0)
+            ImageDraw.Draw(sombra).rectangle([40, 40, 40 + pc.width, 40 + pc.height], fill=70)
+            sombra = sombra.filter(ImageFilter.GaussianBlur(18))
+            im.paste((60, 58, 55), (x - 40 + 10, y - 40 + 16), sombra)
+            im.paste(pc, (x, y))
+            x += pc.width + vao
+        a = vinheta(np.asarray(im).astype(np.float32), 0.25)
+        a = grao(a, 2.0)
         Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(IMG / nome, quality=84)
 
 
@@ -392,6 +435,7 @@ def main():
     manuscrito(1600, 1100).save(IMG / 'manuscrito.webp', quality=86)
     og(livro).save(OG / 'entend.png', optimize=True)
     provisorias(livro)
+    dobras(livro)
     print('ok:', *sorted(p.name for p in IMG.iterdir()), 'og/entend.png')
 
 

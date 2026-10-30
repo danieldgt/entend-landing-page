@@ -23,8 +23,8 @@ try:
         while True:
             r=json.loads(ws.recv())
             if r.get('id')==n[0]: return r.get('result',{})
-    js = """(()=>{const d=document.documentElement;const b=document.querySelector('.dobra .botao').getBoundingClientRect();
-    const larg=[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1&&!e.closest('.dobra__sala')).slice(0,4).map(e=>e.tagName+'.'+(e.className||'').toString().slice(0,30));
+    js = """(()=>{const d=document.documentElement;const b=document.querySelector('.dobra [data-cta]').getBoundingClientRect();
+    const larg=[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1&&!e.closest('.dobra__trilho,.carrossel__trilho')).slice(0,4).map(e=>e.tagName+'.'+(e.className||'').toString().slice(0,30));
     return JSON.stringify({estouro:d.scrollWidth-d.clientWidth,cta_fundo:Math.round(b.bottom),altura:innerHeight,largos:larg})})()"""
     for w,h in TAMANHOS:
         cmd('Emulation.setDeviceMetricsOverride',width=w,height=h,deviceScaleFactor=1,mobile=w<700)
